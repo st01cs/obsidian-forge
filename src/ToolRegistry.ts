@@ -1,6 +1,7 @@
 import { defineTool, Type } from "./pi-stub";
 import { VaultAdapter } from "./VaultAdapter";
 import { IS_MOBILE } from "./mobile";
+import { App, requestUrl, RequestUrlParam } from "obsidian";
 
 export class ToolRegistry {
   private tools: Map<string, ReturnType<typeof defineTool>> = new Map();
@@ -290,10 +291,14 @@ export class ToolRegistry {
   }
 
   private registerHttpRequestTool(): void {
+    // MOBI-03, EXT-01, EXT-02: Get app reference via vaultAdapter
+    const vaultAdapter = this.vaultAdapter;
+    const app = (vaultAdapter as unknown as { app: App }).app;
+
     this.register('http_request', defineTool({
       name: 'http_request',
       label: 'HTTP Request',
-      description: 'Make an HTTP request to fetch content from a URL. Use for fetching web pages, APIs, or external resources.',
+      description: 'Make an HTTP request to fetch content from a URL. Works on both Desktop and Mobile via app.requestUrl().',
       parameters: Type.Object({
         url: Type.String({ description: 'The URL to fetch' }),
         method: Type.Optional(Type.String({ description: 'HTTP method: GET, POST, PUT, DELETE. Default: GET' })),
@@ -301,19 +306,30 @@ export class ToolRegistry {
         body: Type.Optional(Type.String({ description: 'Request body for POST/PUT' }))
       }),
       async execute(_toolCallId, { url, method = 'GET', headers, body }) {
-        // Note: In actual Obsidian plugin, we'd use app.requestUrl() which is safer
-        // For now, use global fetch (available in Electron renderer)
+        // MOBI-03: Use app.requestUrl() instead of global fetch (CORS-safe, mobile-compatible)
         try {
-          const response = await fetch(url, { method, headers, body });
-          const text = await response.text();
+          const params: RequestUrlParam = {
+            url,
+            method: method as 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
+            headers: headers ?? {}
+          };
+          if (body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+            params.body = body;
+          }
+
+          const response = await requestUrl(params);
+          const responseText = typeof response.json === 'function'
+            ? JSON.stringify(response.json())
+            : response.text;
+
           return {
-            content: [{ type: 'text', text: text.slice(0, 10000) }], // Limit response size
-            details: { url, status: response.status as number | undefined, size: text.length as number | undefined, error: undefined as string | undefined }
+            content: [{ type: 'text', text: responseText.slice(0, 10000) }],
+            details: { url, status: response.status, size: responseText.length }
           };
         } catch (error) {
           return {
             content: [{ type: 'text', text: `HTTP request failed: ${error}` }],
-            details: { url, status: undefined as number | undefined, size: undefined as number | undefined, error: String(error) as string | undefined }
+            details: { url, status: 0, error: String(error) }
           };
         }
       }
