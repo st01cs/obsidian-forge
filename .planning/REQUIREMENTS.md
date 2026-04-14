@@ -29,17 +29,17 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Knowledge Routing
 
-- [ ] **ROUTE-01**: Agent automatically classifies inbound messages by type (decision, event,成果, 1:1, architecture, person, project update)
-- [ ] **ROUTE-02**: Classified content is routed to correct notes/zones with appropriate frontmatter
-- [ ] **ROUTE-03**: PARA zones maintained: work/, org/, performance/, cognitive/, reference/, draft/, forge/
-- [ ] **ROUTE-04**: All notes include required frontmatter (date, description ~150 chars, tags); notes over 300 chars include wikilinks
+- [x] **ROUTE-01**: Agent automatically classifies inbound messages by type (decision, event,成果, 1:1, architecture, person, project update)
+- [x] **ROUTE-02**: Classified content is routed to correct notes/zones with appropriate frontmatter
+- [x] **ROUTE-03**: PARA zones maintained: work/, org/, performance/, cognitive/, reference/, draft/, forge/
+- [x] **ROUTE-04**: All notes include required frontmatter (date, description ~150 chars, tags); notes over 300 chars include wikilinks
 
 ### Vault Operations
 
 - [ ] **VAULT-01**: Agent reads notes via vault.cachedRead() with metadataCache for frontmatter/links
 - [ ] **VAULT-02**: Agent creates notes via vault.create(), modifies via vault.modify(), atomic edits via vault.process()
-- [ ] **VAULT-03**: Write validation (async, non-blocking) checks frontmatter completeness and wikilink presence
-- [ ] **VAULT-04**: vault_rename updates all referencing wikilinks automatically
+- [x] **VAULT-03**: Write validation (async, non-blocking) checks frontmatter completeness and wikilink presence
+- [x] **VAULT-04**: vault_rename updates all referencing wikilinks automatically
 
 ### Tool System
 
@@ -49,9 +49,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Commands
 
-- [ ] **CMND-01**: /standup — Morning standup: load context, review yesterday, show tasks, suggest priorities
-- [ ] **CMND-02**: /free-dump — Capture non-structured text, auto-classify and route
-- [ ] **CMND-03**: /review — Full session review: validate notes, update indexes,发现 missed成果
+- [x] **CMND-01**: /standup — Morning standup: load context, review yesterday, show tasks, suggest priorities
+- [x] **CMND-02**: /free-dump — Capture non-structured text, auto-classify and route
+- [x] **CMND-03**: /review — Full session review: validate notes, update indexes,发现 missed成果
 - [ ] **CMND-04**: /weekly — Cross-session weekly summary, pattern discovery,成果 report
 - [ ] **CMND-05**: /1on1 — Structure meeting notes into standard 1:1 format
 - [ ] **CMND-06**: /incident — Capture incident from Slack, reconstruct timeline, create event doc
@@ -136,20 +136,20 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SESS-01 | Phase 2 | Complete |
 | SESS-02 | Phase 2 | Complete |
 | SESS-03 | Phase 2 | Complete |
-| ROUTE-01 | Phase 2 | Pending |
-| ROUTE-02 | Phase 2 | Pending |
-| ROUTE-03 | Phase 2 | Pending |
-| ROUTE-04 | Phase 2 | Pending |
+| ROUTE-01 | Phase 2 | Complete |
+| ROUTE-02 | Phase 2 | Complete |
+| ROUTE-03 | Phase 2 | Complete |
+| ROUTE-04 | Phase 2 | Complete |
 | VAULT-01 | Phase 1 | Pending |
 | VAULT-02 | Phase 1 | Pending |
-| VAULT-03 | Phase 2 | Pending |
-| VAULT-04 | Phase 2 | Pending |
+| VAULT-03 | Phase 2 | Complete |
+| VAULT-04 | Phase 2 | Complete |
 | TOOL-01 | Phase 1 | Pending |
 | TOOL-02 | Phase 1 | Pending |
 | TOOL-03 | Phase 1 | Pending |
-| CMND-01 | Phase 2 | Pending |
-| CMND-02 | Phase 2 | Pending |
-| CMND-03 | Phase 2 | Pending |
+| CMND-01 | Phase 2 | Complete |
+| CMND-02 | Phase 2 | Complete |
+| CMND-03 | Phase 2 | Complete |
 | CMND-04 | Phase 3 | Pending |
 | CMND-05 | Phase 3 | Pending |
 | CMND-06 | Phase 3 | Pending |

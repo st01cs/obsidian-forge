@@ -60,7 +60,7 @@ Plans:
 Plans:
 - [x] 02-01-PLAN.md — ESM dynamic import wrapper (pi-loader.ts), AgentBridge, SessionManager, main.ts integration
 - [x] 02-02-PLAN.md — Session event subscriptions, write validation (VAULT-03), wikilink updates (VAULT-04), context injection
-- [ ] 02-03-PLAN.md — Command implementations (/standup, /free-dump, /review), custom command loader (CMND-10), FORGE.md docs
+- [x] 02-03-PLAN.md — Command implementations (/standup, /free-dump, /review), custom command loader (CMND-10), FORGE.md docs
 
 ### Phase 3: Advanced
 **Goal**: Agent supports complex workflows, sub-agents, and external evidence capture
