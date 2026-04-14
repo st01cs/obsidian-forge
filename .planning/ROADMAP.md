@@ -59,7 +59,7 @@ Plans:
 
 Plans:
 - [x] 02-01-PLAN.md — ESM dynamic import wrapper (pi-loader.ts), AgentBridge, SessionManager, main.ts integration
-- [ ] 02-02-PLAN.md — Session event subscriptions, write validation (VAULT-03), wikilink updates (VAULT-04), context injection
+- [x] 02-02-PLAN.md — Session event subscriptions, write validation (VAULT-03), wikilink updates (VAULT-04), context injection
 - [ ] 02-03-PLAN.md — Command implementations (/standup, /free-dump, /review), custom command loader (CMND-10), FORGE.md docs
 
 ### Phase 3: Advanced
@@ -98,7 +98,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Planning complete | 2026-04-14 |
-| 2. Agent Loop | 0/3 | Planning complete | - |
+| 2. Agent Loop | 2/3 | Planning complete | - |
 | 3. Advanced | 0/N | Not started | - |
 | 4. Polish | 0/N | Not started | - |
 
