@@ -1,4 +1,4 @@
-import { App, Plugin, PluginManifest, TFolder } from 'obsidian';
+import { App, Plugin, PluginManifest, TFolder, Notice } from 'obsidian';
 import { VaultAdapter } from './VaultAdapter';
 import { ToolRegistry } from './ToolRegistry';
 import { ChatPanel, VIEW_TYPE_CHAT } from './ChatPanel';
@@ -6,6 +6,9 @@ import { ObsidianForgeSettingsTab } from './SettingsTab';
 import { COMMANDS } from './commands';
 import { AgentBridge } from './AgentBridge';
 import { loadPiSDK } from './pi-loader';
+import { executeStandupCommand } from './commands/standup';
+import { executeFreeDumpCommand } from './commands/free-dump';
+import { executeReviewCommand } from './commands/review';
 
 // ═══════════════════════════════════════════════════════════════
 // SETTINGS INTERFACE
@@ -308,22 +311,72 @@ ${new Date().toISOString().split('T')[0]}
       }
     });
 
-    // Command palette entries for each command (CORE-04)
-    // Phase 1: These are registered but have no implementation yet
+    // CMND-01: /standup command
+    this.addCommand({
+      id: 'forge-standup',
+      name: 'Forge: Morning Standup',
+      description: 'Load context, review yesterday, show tasks, suggest priorities',
+      callback: async () => {
+        // Open chat panel first
+        this.app.workspace.getLeaf(false).setViewState({
+          type: VIEW_TYPE_CHAT
+        });
+        // Execute standup if agent is ready
+        if (this.agentBridge) {
+          await executeStandupCommand(this.agentBridge);
+        } else {
+          new Notice('Agent not initialized. Configure your API key.', 4000);
+        }
+      }
+    });
+
+    // CMND-02: /free-dump command
+    this.addCommand({
+      id: 'forge-free-dump',
+      name: 'Forge: Free Dump',
+      description: 'Capture non-structured text, auto-classify and route',
+      callback: async () => {
+        this.app.workspace.getLeaf(false).setViewState({
+          type: VIEW_TYPE_CHAT
+        });
+        if (this.agentBridge) {
+          await executeFreeDumpCommand(this.agentBridge);
+        } else {
+          new Notice('Agent not initialized. Configure your API key.', 4000);
+        }
+      }
+    });
+
+    // CMND-03: /review command
+    this.addCommand({
+      id: 'forge-review',
+      name: 'Forge: Session Review',
+      description: 'Validate notes, update indexes, discover missed wins',
+      callback: async () => {
+        this.app.workspace.getLeaf(false).setViewState({
+          type: VIEW_TYPE_CHAT
+        });
+        if (this.agentBridge) {
+          await executeReviewCommand(this.agentBridge);
+        } else {
+          new Notice('Agent not initialized. Configure your API key.', 4000);
+        }
+      }
+    });
+
+    // Phase 3+ commands (stub - not implemented yet)
     for (const cmd of COMMANDS) {
-      if (cmd.id === 'open-chat') continue; // Already registered above
+      if (['open-chat', 'standup', 'free-dump', 'review'].includes(cmd.id)) continue;
 
       this.addCommand({
         id: `forge-${cmd.id}`,
         name: `Forge: ${cmd.name}`,
         description: cmd.description,
         callback: () => {
-          // Open chat panel first
           this.app.workspace.getLeaf(false).setViewState({
             type: VIEW_TYPE_CHAT
           });
-          // TODO: Phase 2 - trigger command execution
-          console.log(`[ObsidianForge] Command /${cmd.id} invoked (Phase 2 implementation)`);
+          new Notice(`${cmd.name} will be available in a future phase.`, 3000);
         }
       });
     }
