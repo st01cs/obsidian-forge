@@ -75,7 +75,13 @@ export class ForgeSessionManager {
   async buildStartupContext(): Promise<string> {
     const parts: string[] = [];
 
-    // 1. Yesterday's session note (for continuity)
+    // 1. NORTHSTAR.md (D-01) - Most important, load first
+    const northStar = await this.loadNorthStarContent();
+    if (northStar) {
+      parts.push(`## North Star\n${this.truncate(northStar, 1500)}`);
+    }
+
+    // 2. Yesterday's session (D-03 - continuity)
     const yesterday = this.getYesterdayDate();
     const yesterdayPath = `forge/cognitive/sessions/${yesterday}.md`;
     if (this.vaultAdapter.exists(yesterdayPath)) {
@@ -85,25 +91,28 @@ export class ForgeSessionManager {
       } catch { /* ignore */ }
     }
 
-    // 2. Active projects from metadataCache (fast, no content loading)
-    // D-01: work/ folder + project:true frontmatter
+    // 3. Active projects from metadataCache (D-01 - fast, no content loading)
     const activeProjects = this.detectActiveProjects();
     if (activeProjects.length > 0) {
-      parts.push(`## Active Projects\n${activeProjects.map(p => `- ${p}`).join('\n')}`);
+      parts.push(`## Active Projects (${activeProjects.length})\n${activeProjects.slice(0, 10).map(p => `- ${p}`).join('\n')}${activeProjects.length > 10 ? '\n...and more' : ''}`);
     }
 
-    // 3. Recent sessions (last 7 days) for longer memory
-    const recentSessions = await this.loadRecentSessions(7);
-    if (recentSessions.length > 0) {
-      const summaries = recentSessions.map(s => `- ${s.date}: ${s.summary}`).join('\n');
-      parts.push(`## Recent Sessions\n${summaries}`);
-    }
-
-    // 4. Task list from work/ zone (date-referenced checkboxes)
+    // 4. Open tasks from work/ zone (D-01)
     const tasks = await this.extractTasks();
     if (tasks.length > 0) {
-      parts.push(`## Open Tasks\n${tasks.join('\n')}`);
+      parts.push(`## Open Tasks\n${tasks.slice(0, 15).join('\n')}${tasks.length > 15 ? '\n...and more' : ''}`);
     }
+
+    // 5. Recent sessions summary (D-03 - for continuity)
+    const recentSessions = await this.loadRecentSessions(7);
+    if (recentSessions.length > 0) {
+      const summaries = recentSessions.slice(0, 5).map(s => `- ${s.date}: ${s.summary}`).join('\n');
+      parts.push(`## Recent Sessions (last 7 days)\n${summaries}`);
+    }
+
+    // 6. Git recent commits (D-01 - Desktop only)
+    // Note: git_log tool is available via ToolRegistry
+    parts.push(`## Git Commits\n(git_log tool available - use it to get recent commits)`);
 
     return parts.join('\n\n');
   }
@@ -209,15 +218,21 @@ projects_touched: [${entry.projects_touched.map(p => `"${p}"`).join(', ')}]
     const workDir = 'work/';
     const files = this.vaultAdapter.listFiles('md').filter(f => f.path.startsWith(workDir));
 
-    for (const file of files.slice(0, 10)) { // Limit file scan for token budget
+    // Check files in date order (most recent first)
+    const sortedFiles = files.sort((a, b) => b.stat?.mtime?.getTime() || 0 - a.stat?.mtime?.getTime() || 0);
+
+    for (const file of sortedFiles.slice(0, 10)) {
       try {
         const content = await this.vaultAdapter.readNote(file.path);
         // Match checkbox patterns: - [ ] or - [x]
-        const matches = content.matchAll(/- \[([ x])\] (.+)/g);
+        const matches = content.matchAll(/^- \[([ x])\] (.+)$/gm);
         for (const match of matches) {
           const [_, status, text] = match;
           if (status === ' ') { // Only open tasks
-            tasks.push(`- [ ] ${text} (${file.path})`);
+            // Include due date if present
+            const dateMatch = text.match(/\b(\d{4}-\d{2}-\d{2})\b/);
+            const dateStr = dateMatch ? ` (due: ${dateMatch[1]})` : '';
+            tasks.push(`- [ ] ${text}${dateStr} (${file.path})`);
           }
         }
       } catch { /* ignore */ }
