@@ -1,7 +1,7 @@
 import { App, ItemView, WorkspaceLeaf, setIcon } from 'obsidian';
 import { COMMANDS, filterCommands, CommandDefinition } from './commands';
 import { ObsidianForge } from './main';
-import { Message } from '@mariozechner/pi-ai';
+import { Message } from './pi-stub';
 
 export const VIEW_TYPE_CHAT = 'obsidian-forge-chat';
 

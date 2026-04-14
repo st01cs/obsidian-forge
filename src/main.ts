@@ -87,38 +87,56 @@ export default class ObsidianForge extends Plugin {
   settingsTab: ObsidianForgeSettingsTab | null = null;
 
   async onload(): Promise<void> {
-    console.log('[ObsidianForge] Loading plugin...');
+    try {
+      console.log('[ObsidianForge] Loading plugin...');
 
-    // 1. Load settings first (D-06)
-    await this.loadSettings();
+      // 1. Load settings first (D-06)
+      await this.loadSettings();
+      console.log('[ObsidianForge] Step 1: settings loaded');
 
-    // 2. Initialize VaultAdapter (foundation for everything)
-    this.vaultAdapter = new VaultAdapter(this.app);
+      // 2. Initialize VaultAdapter (foundation for everything)
+      this.vaultAdapter = new VaultAdapter(this.app);
+      console.log('[ObsidianForge] Step 2: VaultAdapter created');
 
-    // 3. Initialize ToolRegistry with default tools
-    this.toolRegistry = new ToolRegistry(this.vaultAdapter);
-    this.toolRegistry.registerDefaultTools();
+      // 3. Initialize ToolRegistry with default tools
+      this.toolRegistry = new ToolRegistry(this.vaultAdapter);
+      this.toolRegistry.registerDefaultTools();
+      console.log('[ObsidianForge] Step 3: tools registered');
 
-    // 4. Register the chat view (CORE-01)
-    this.registerView(VIEW_TYPE_CHAT, (leaf) => {
-      this.chatPanel = new ChatPanel(leaf, this);
-      return this.chatPanel;
-    });
+      // 4. Register the chat view (CORE-01)
+      this.registerView(VIEW_TYPE_CHAT, (leaf) => {
+        this.chatPanel = new ChatPanel(leaf, this);
+        return this.chatPanel;
+      });
+      console.log('[ObsidianForge] Step 4: view registered');
 
-    // 5. Register commands (CORE-03, CORE-04)
-    this.registerCommands();
+      // 5. Register commands (CORE-03, CORE-04)
+      this.registerCommands();
+      console.log('[ObsidianForge] Step 5: commands registered');
 
-    // 6. Add settings tab (INST-02)
-    this.settingsTab = new ObsidianForgeSettingsTab(this.app, this);
-    this.addSettingTab(this.settingsTab);
+      // 6. Add settings tab (INST-02)
+      this.settingsTab = new ObsidianForgeSettingsTab(this.app, this);
+      this.addSettingTab(this.settingsTab);
+      console.log('[ObsidianForge] Step 6: settings tab added');
 
-    // 7. Create vault structure on first enable (INST-03, OPS-01)
-    await this.ensureVaultStructure();
+      // 7. Create vault structure on first enable (INST-03, OPS-01)
+      await this.ensureVaultStructure();
+      console.log('[ObsidianForge] Step 7: vault structure checked');
 
-    // 8. Load FORGE.md on startup (OPS-02 - partial; full loading in Phase 2)
-    await this.loadForgeInstructions();
+      // 8. Load FORGE.md on startup (OPS-02 - partial; full loading in Phase 2)
+      await this.loadForgeInstructions();
+      console.log('[ObsidianForge] Step 8: FORGE.md loaded');
 
-    console.log('[ObsidianForge] Plugin loaded successfully.');
+      console.log('[ObsidianForge] Plugin loaded successfully.');
+
+      // Write success marker
+      this.app.vault.create('obsidian-forge-load-ok.md', `# Obsidian Forge loaded successfully at ${new Date().toISOString()}`).catch(() => {});
+    } catch (error) {
+      const msg = `[ObsidianForge] LOAD ERROR: ${error}\n${error?.stack || ''}`;
+      console.error(msg);
+      // Write error to vault so user can see it
+      this.app.vault.create(`obsidian-forge-error.txt`, `ERROR at ${new Date().toISOString()}\n${String(error)}\n${error?.stack || ''}`).catch(() => {});
+    }
   }
 
   async onunload(): Promise<void> {

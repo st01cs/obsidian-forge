@@ -1,5 +1,4 @@
-import { defineTool } from "@mariozechner/pi-coding-agent";
-import { Type } from "@sinclair/typebox";
+import { defineTool, Type } from "./pi-stub";
 import { VaultAdapter } from "./VaultAdapter";
 import { IS_MOBILE } from "./mobile";
 
