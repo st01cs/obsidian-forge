@@ -62,9 +62,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Sub-Agents
 
-- [ ] **SUBG-01**: Heavy tasks spawn isolated sub-agent sessions via createAgentSession()
-- [ ] **SUBG-02**: Sub-agents defined as .md files in forge/agents/ with frontmatter (name, tools, model, maxTurns)
-- [ ] **SUBG-03**: Long-running sub-agents use requestIdleCallback to avoid blocking UI
+- [x] **SUBG-01**: Heavy tasks spawn isolated sub-agent sessions via createAgentSession()
+- [x] **SUBG-02**: Sub-agents defined as .md files in forge/agents/ with frontmatter (name, tools, model, maxTurns)
+- [x] **SUBG-03**: Long-running sub-agents use requestIdleCallback to avoid blocking UI
 
 ### External Integrations
 
@@ -157,9 +157,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CMND-08 | Phase 3 | Pending |
 | CMND-09 | Phase 3 | Pending |
 | CMND-10 | Phase 2 | Pending |
-| SUBG-01 | Phase 3 | Pending |
-| SUBG-02 | Phase 3 | Pending |
-| SUBG-03 | Phase 3 | Pending |
+| SUBG-01 | Phase 3 | Complete |
+| SUBG-02 | Phase 3 | Complete |
+| SUBG-03 | Phase 3 | Complete |
 | EXT-01 | Phase 3 | Pending |
 | EXT-02 | Phase 3 | Pending |
 | EXT-03 | Phase 3 | Pending |
