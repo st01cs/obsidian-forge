@@ -7,7 +7,7 @@ Obsidian Forge embeds an AI agent (pi SDK) into Obsidian as a community plugin, 
 ## Phases
 
 - [x] **Phase 1: Foundation** - Plugin scaffold, vault adapter, tool registry, conversation panel, settings, mobile foundation
-- [ ] **Phase 2: Agent Loop** - Session context, knowledge routing, core commands, write validation
+- [x] **Phase 2: Agent Loop** - Session context, knowledge routing, core commands, write validation
 - [ ] **Phase 3: Advanced** - Complex commands, sub-agents, external integrations
 - [ ] **Phase 4: Polish** - Status bar indicator, mobile parity
 
@@ -80,7 +80,12 @@ Plans:
   11. GitHub integration reads PRs, comments, and code changes via requestUrl()
   12. Git history reads commits and diffs via child_process (Desktop-only)
   13. External integrations (Slack/GitHub) work on mobile via requestUrl()
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Sub-agent infrastructure (SubAgentManager, agent-loader, idle-guard, sample agents)
+- [ ] 03-02-PLAN.md — External integrations (ApiClient, SlackClient, GitHubClient, GitClient, http_request refactor)
+- [ ] 03-03-PLAN.md — Advanced commands (/weekly, /1on1, /incident, /brag, /report, /audit)
 
 ### Phase 4: Polish
 **Goal**: UI polish and mobile parity
@@ -98,8 +103,8 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Planning complete | 2026-04-14 |
-| 2. Agent Loop | 2/3 | Planning complete | - |
-| 3. Advanced | 0/N | Not started | - |
+| 2. Agent Loop | 3/3 | Planning complete | 2026-04-14 |
+| 3. Advanced | 0/3 | Planning complete | - |
 | 4. Polish | 0/N | Not started | - |
 
 ## Coverage
