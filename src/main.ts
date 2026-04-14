@@ -16,6 +16,7 @@ import { executeIncidentCommand } from './commands/incident';
 import { executeBragCommand } from './commands/brag';
 import { executeReportCommand } from './commands/report';
 import { executeAuditCommand } from './commands/audit';
+import { StatusBarManager } from './StatusBarManager';
 
 // ═══════════════════════════════════════════════════════════════
 // SETTINGS INTERFACE
@@ -107,6 +108,7 @@ export default class ObsidianForge extends Plugin {
   // Agent components
   agentBridge: AgentBridge | null = null;
   subAgentManager: SubAgentManager | null = null;
+  statusBarManager: StatusBarManager | null = null;
 
   async onload(): Promise<void> {
     try {
@@ -161,12 +163,17 @@ export default class ObsidianForge extends Plugin {
         console.warn('[ObsidianForge] pi SDK not available:', error);
       }
 
+      // 9b. Create status bar manager (CORE-05)
+      this.statusBarManager = new StatusBarManager(this, () => this.settings);
+      console.log('[ObsidianForge] Step 9b: StatusBarManager created');
+
       // 10. Create agent bridge and session
       this.agentBridge = new AgentBridge({
         vaultAdapter: this.vaultAdapter,
         toolRegistry: this.toolRegistry,
         settings: this.settings,
-        subAgentManager: this.subAgentManager
+        subAgentManager: this.subAgentManager,
+        statusBarManager: this.statusBarManager
       });
 
       try {
@@ -215,6 +222,11 @@ export default class ObsidianForge extends Plugin {
     // Close chat panel if open
     if (this.chatPanel) {
       this.chatPanel = null;
+    }
+
+    // Clean up status bar manager (CORE-05)
+    if (this.statusBarManager) {
+      this.statusBarManager = null;
     }
 
     console.log('[ObsidianForge] Plugin unloaded.');

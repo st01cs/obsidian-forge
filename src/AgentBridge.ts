@@ -13,6 +13,7 @@ import { SubAgentManager } from './agents';
 import { loadPiSDK, isPiLoaded, getPiSDK } from './pi-loader';
 import { ForgeSessionManager } from './session/SessionManager';
 import { WriteValidator } from './validation/WriteValidator';
+import { StatusBarManager } from './StatusBarManager';
 import { Notice } from 'obsidian';
 
 export interface AgentBridgeOptions {
@@ -20,6 +21,7 @@ export interface AgentBridgeOptions {
   toolRegistry: ToolRegistry;
   settings: ObsidianForgeSettings;
   subAgentManager?: SubAgentManager | null;
+  statusBarManager?: StatusBarManager | null;
 }
 
 export class AgentBridge {
@@ -27,18 +29,22 @@ export class AgentBridge {
   private toolRegistry: ToolRegistry;
   private settings: ObsidianForgeSettings;
   private subAgentManager: SubAgentManager | null;
+  private statusBarManager: StatusBarManager | null;
   private sessionManager: ForgeSessionManager;
   private session: any = null;
   private initialized = false;
   private writeValidator: WriteValidator;
   private eventUnsubscribe: (() => void) | null = null;
   private sessionStartTime: number = 0;
+  private totalInputTokens: number = 0;
+  private totalOutputTokens: number = 0;
 
   constructor(options: AgentBridgeOptions) {
     this.vaultAdapter = options.vaultAdapter;
     this.toolRegistry = options.toolRegistry;
     this.settings = options.settings;
     this.subAgentManager = options.subAgentManager ?? null;
+    this.statusBarManager = options.statusBarManager ?? null;
     this.sessionManager = new ForgeSessionManager(options.vaultAdapter);
     this.writeValidator = new WriteValidator(options.vaultAdapter);
   }
@@ -107,6 +113,12 @@ export class AgentBridge {
     this.session = session;
     console.log('[AgentBridge] Session created');
 
+    // Reset token tracking for new session
+    this.totalInputTokens = 0;
+    this.totalOutputTokens = 0;
+    this.statusBarManager?.reset();
+    this.statusBarManager?.update('Idle');
+
     // Subscribe to session events for streaming, tool execution, session close
     this.eventUnsubscribe = this.session.subscribe((event: any) => {
       switch (event.type) {
@@ -149,6 +161,19 @@ export class AgentBridge {
           });
           break;
         }
+
+        case 'done': {
+          const usage = (event as any).message?.usage;
+          if (usage) {
+            this.totalInputTokens += usage.input || 0;
+            this.totalOutputTokens += usage.output || 0;
+            this.statusBarManager?.update('Idle', {
+              input: this.totalInputTokens,
+              output: this.totalOutputTokens
+            });
+          }
+          break;
+        }
       }
     });
 
@@ -172,6 +197,18 @@ export class AgentBridge {
 
   getSubAgentManager(): SubAgentManager | null {
     return this.subAgentManager;
+  }
+
+  getTokenUsage(): { input: number; output: number; total: number } {
+    return {
+      input: this.totalInputTokens,
+      output: this.totalOutputTokens,
+      total: this.totalInputTokens + this.totalOutputTokens
+    };
+  }
+
+  getModelName(): string {
+    return this.settings.model;
   }
 
   private getVaultPath(): string {
