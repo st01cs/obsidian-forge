@@ -65,6 +65,42 @@ export class ObsidianForgeSettingsTab extends PluginSettingTab {
           });
       });
 
+    // Divider for integrations
+    containerEl.createEl('hr');
+
+    // Integration settings header
+    containerEl.createEl('h3', { text: 'Integrations' });
+
+    // EXT-01: Slack Bot Token
+    new Setting(containerEl)
+      .setName('Slack Bot Token')
+      .setDesc('Bot token (xoxb-) for Slack integration (EXT-01)')
+      .addTextField((textField: TextComponent) => {
+        textField
+          .setPlaceholder('xoxb-...')
+          .setAttr('type', 'password')
+          .setValue(this.plugin.settings.slackToken)
+          .onChange(async (value: string) => {
+            this.plugin.settings.slackToken = value;
+            await this.plugin.saveSettings();
+          });
+      });
+
+    // EXT-02: GitHub Personal Access Token
+    new Setting(containerEl)
+      .setName('GitHub Personal Access Token')
+      .setDesc('PAT for GitHub integration (EXT-02)')
+      .addTextField((textField: TextComponent) => {
+        textField
+          .setPlaceholder('ghp_...')
+          .setAttr('type', 'password')
+          .setValue(this.plugin.settings.githubToken)
+          .onChange(async (value: string) => {
+            this.plugin.settings.githubToken = value;
+            await this.plugin.saveSettings();
+          });
+      });
+
     // Divider
     containerEl.createEl('hr');
 

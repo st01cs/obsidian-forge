@@ -5,6 +5,7 @@ import { ChatPanel, VIEW_TYPE_CHAT } from './ChatPanel';
 import { ObsidianForgeSettingsTab } from './SettingsTab';
 import { COMMANDS } from './commands';
 import { AgentBridge } from './AgentBridge';
+import { SubAgentManager } from './agents';
 import { loadPiSDK } from './pi-loader';
 import { executeStandupCommand } from './commands/standup';
 import { executeFreeDumpCommand } from './commands/free-dump';
@@ -18,12 +19,18 @@ export interface ObsidianForgeSettings {
   provider: string;
   apiKey: string;
   model: string;
+  // EXT-01: Slack Bot Token
+  slackToken: string;
+  // EXT-02: GitHub Personal Access Token
+  githubToken: string;
 }
 
 export const DEFAULT_SETTINGS: Partial<ObsidianForgeSettings> = {
   provider: 'openai',
   apiKey: '',
-  model: 'gpt-4o'
+  model: 'gpt-4o',
+  slackToken: '',     // EXT-01
+  githubToken: ''    // EXT-02
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -93,6 +100,7 @@ export default class ObsidianForge extends Plugin {
 
   // Agent components
   agentBridge: AgentBridge | null = null;
+  subAgentManager: SubAgentManager | null = null;
 
   async onload(): Promise<void> {
     try {
