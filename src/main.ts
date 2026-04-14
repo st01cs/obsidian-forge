@@ -4,6 +4,8 @@ import { ToolRegistry } from './ToolRegistry';
 import { ChatPanel, VIEW_TYPE_CHAT } from './ChatPanel';
 import { ObsidianForgeSettingsTab } from './SettingsTab';
 import { COMMANDS } from './commands';
+import { AgentBridge } from './AgentBridge';
+import { loadPiSDK } from './pi-loader';
 
 // ═══════════════════════════════════════════════════════════════
 // SETTINGS INTERFACE
@@ -86,6 +88,9 @@ export default class ObsidianForge extends Plugin {
   chatPanel: ChatPanel | null = null;
   settingsTab: ObsidianForgeSettingsTab | null = null;
 
+  // Agent components
+  agentBridge: AgentBridge | null = null;
+
   async onload(): Promise<void> {
     try {
       console.log('[ObsidianForge] Loading plugin...');
@@ -127,6 +132,33 @@ export default class ObsidianForge extends Plugin {
       await this.loadForgeInstructions();
       console.log('[ObsidianForge] Step 8: FORGE.md loaded');
 
+      // 9. Initialize pi SDK via dynamic import
+      try {
+        await loadPiSDK();
+        console.log('[ObsidianForge] Step 9: pi SDK loaded');
+      } catch (error) {
+        console.warn('[ObsidianForge] pi SDK not available:', error);
+      }
+
+      // 10. Create agent bridge and session
+      this.agentBridge = new AgentBridge({
+        vaultAdapter: this.vaultAdapter,
+        toolRegistry: this.toolRegistry,
+        settings: this.settings
+      });
+
+      try {
+        await this.agentBridge.initialize();
+        if (this.settings.apiKey) {
+          await this.agentBridge.createSession();
+          console.log('[ObsidianForge] Step 10: Agent session created');
+        } else {
+          console.log('[ObsidianForge] Step 10: Skipped - no API key configured');
+        }
+      } catch (error) {
+        console.warn('[ObsidianForge] Agent session creation failed:', error);
+      }
+
       console.log('[ObsidianForge] Plugin loaded successfully.');
 
       // Write success marker
@@ -141,6 +173,22 @@ export default class ObsidianForge extends Plugin {
 
   async onunload(): Promise<void> {
     console.log('[ObsidianForge] Unloading plugin...');
+
+    // SESS-03: Write session summary on close
+    if (this.agentBridge?.isInitialized()) {
+      try {
+        const sessionManager = this.agentBridge.getSessionManager();
+        await sessionManager.appendSessionEntry({
+          summary: 'Session ended',
+          decisions: [],
+          events: [],
+          wins: [],
+          projects_touched: []
+        });
+      } catch (error) {
+        console.warn('[ObsidianForge] Failed to write session summary:', error);
+      }
+    }
 
     // Close chat panel if open
     if (this.chatPanel) {
@@ -200,6 +248,28 @@ export default class ObsidianForge extends Plugin {
     // Create FORGE.md with manual content
     const forgeMdPath = `${FORGE_ROOT}/FORGE.md`;
     await vault.create(forgeMdPath, buildForgeMdContent());
+
+    // Create NORTHSTAR.md (D-01)
+    const northStarPath = `${FORGE_ROOT}/NORTHSTAR.md`;
+    await vault.create(northStarPath, `# North Star
+
+## Purpose
+This document contains my guiding principles, current priorities, and what matters most right now.
+
+## Current Focus
+-
+
+## Key Projects
+-
+
+## Values
+1.
+2.
+3.
+
+## Last Updated
+${new Date().toISOString().split('T')[0]}
+`);
 
     console.log('[ObsidianForge] Vault structure created.');
   }

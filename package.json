@@ -8,16 +8,21 @@
     "dev": "node esbuild.config.mjs --development",
     "watch": "node esbuild.config.mjs --development --watch"
   },
-  "keywords": ["obsidian", "plugin", "ai", "agent"],
+  "keywords": [
+    "obsidian",
+    "plugin",
+    "ai",
+    "agent"
+  ],
   "license": "MIT",
   "devDependencies": {
     "esbuild": "^0.25.0",
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@mariozechner/pi-coding-agent": "^0.66.1",
-    "@mariozechner/pi-ai": "^0.66.1",
-    "obsidian": "^1.12.3",
-    "@sinclair/typebox": "^0.34.0"
+    "@mariozechner/pi-ai": "^0.67.1",
+    "@mariozechner/pi-coding-agent": "^0.67.1",
+    "@sinclair/typebox": "^0.34.0",
+    "obsidian": "^1.12.3"
   }
 }
