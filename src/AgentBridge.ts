@@ -9,6 +9,7 @@
 import { VaultAdapter } from './VaultAdapter';
 import { ToolRegistry } from './ToolRegistry';
 import { ObsidianForgeSettings } from './main';
+import { SubAgentManager } from './agents';
 import { loadPiSDK, isPiLoaded, getPiSDK } from './pi-loader';
 import { ForgeSessionManager } from './session/SessionManager';
 import { WriteValidator } from './validation/WriteValidator';
@@ -18,12 +19,14 @@ export interface AgentBridgeOptions {
   vaultAdapter: VaultAdapter;
   toolRegistry: ToolRegistry;
   settings: ObsidianForgeSettings;
+  subAgentManager?: SubAgentManager | null;
 }
 
 export class AgentBridge {
   private vaultAdapter: VaultAdapter;
   private toolRegistry: ToolRegistry;
   private settings: ObsidianForgeSettings;
+  private subAgentManager: SubAgentManager | null;
   private sessionManager: ForgeSessionManager;
   private session: any = null;
   private initialized = false;
@@ -35,6 +38,7 @@ export class AgentBridge {
     this.vaultAdapter = options.vaultAdapter;
     this.toolRegistry = options.toolRegistry;
     this.settings = options.settings;
+    this.subAgentManager = options.subAgentManager ?? null;
     this.sessionManager = new ForgeSessionManager(options.vaultAdapter);
     this.writeValidator = new WriteValidator(options.vaultAdapter);
   }
@@ -164,6 +168,10 @@ export class AgentBridge {
 
   getSessionManager(): ForgeSessionManager {
     return this.sessionManager;
+  }
+
+  getSubAgentManager(): SubAgentManager | null {
+    return this.subAgentManager;
   }
 
   private getVaultPath(): string {

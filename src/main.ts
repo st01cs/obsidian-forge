@@ -119,6 +119,10 @@ export default class ObsidianForge extends Plugin {
       this.toolRegistry.registerDefaultTools();
       console.log('[ObsidianForge] Step 3: tools registered');
 
+      // 3b. Initialize SubAgentManager for spawning isolated sub-agents (SUBG-01)
+      this.subAgentManager = new SubAgentManager(this.vaultAdapter, this.toolRegistry);
+      console.log('[ObsidianForge] Step 3b: SubAgentManager initialized');
+
       // 4. Register the chat view (CORE-01)
       this.registerView(VIEW_TYPE_CHAT, (leaf) => {
         this.chatPanel = new ChatPanel(leaf, this);
@@ -155,7 +159,8 @@ export default class ObsidianForge extends Plugin {
       this.agentBridge = new AgentBridge({
         vaultAdapter: this.vaultAdapter,
         toolRegistry: this.toolRegistry,
-        settings: this.settings
+        settings: this.settings,
+        subAgentManager: this.subAgentManager
       });
 
       try {
@@ -255,6 +260,9 @@ export default class ObsidianForge extends Plugin {
     for (const zone of ZONES) {
       await vault.createFolder(`${FORGE_ROOT}/${zone}`);
     }
+
+    // Create forge/agents/ directory for sub-agent definitions (SUBG-02)
+    await vault.createFolder(`${FORGE_ROOT}/agents`);
 
     // Create FORGE.md with manual content
     const forgeMdPath = `${FORGE_ROOT}/FORGE.md`;
