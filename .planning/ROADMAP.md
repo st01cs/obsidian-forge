@@ -8,8 +8,8 @@ Obsidian Forge embeds an AI agent (pi SDK) into Obsidian as a community plugin, 
 
 - [x] **Phase 1: Foundation** - Plugin scaffold, vault adapter, tool registry, conversation panel, settings, mobile foundation
 - [x] **Phase 2: Agent Loop** - Session context, knowledge routing, core commands, write validation
-- [ ] **Phase 3: Advanced** - Complex commands, sub-agents, external integrations
-- [ ] **Phase 4: Polish** - Status bar indicator, mobile parity
+- [x] **Phase 3: Advanced** - Complex commands, sub-agents, external integrations (completed 2026-04-14)
+- [x] **Phase 4: Polish** - Status bar indicator, mobile parity (completed 2026-04-14)
 
 ## Phase Details
 
@@ -85,7 +85,7 @@ Plans:
 Plans:
 - [x] 03-01-PLAN.md — Sub-agent infrastructure (SubAgentManager, agent-loader, idle-guard, sample agents)
 - [x] 03-02-PLAN.md — External integrations (ApiClient, SlackClient, GitHubClient, GitClient, http_request refactor)
-- [ ] 03-03-PLAN.md — Advanced commands (/weekly, /1on1, /incident, /brag, /report, /audit)
+- [x] 03-03-PLAN.md — Advanced commands (/weekly, /1on1, /incident, /brag, /report, /audit)
 
 ### Phase 4: Polish
 **Goal**: UI polish and mobile parity
@@ -95,7 +95,11 @@ Plans:
   1. Status bar displays model name, session state, and token usage in real-time
   2. On mobile, bash/Git tools silently excluded from tool list with no error shown
   3. Core chat, vault read/write, metadata query, and LLM calls remain fully functional on mobile
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [x] 04-01-PLAN.md — Status bar indicator (CORE-05), mobile parity verification (MOBI-01, MOBI-02)
+
 **UI hint**: yes
 
 ## Progress
@@ -104,8 +108,8 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Planning complete | 2026-04-14 |
 | 2. Agent Loop | 3/3 | Planning complete | 2026-04-14 |
-| 3. Advanced | 2/3 | In Progress|  |
-| 4. Polish | 0/N | Not started | - |
+| 3. Advanced | 3/3 | Complete   | 2026-04-14 |
+| 4. Polish | 1/1 | Complete   | 2026-04-14 |
 
 ## Coverage
 

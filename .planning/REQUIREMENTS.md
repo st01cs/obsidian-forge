@@ -19,7 +19,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **CORE-02**: Agent responses stream in real-time to the conversation panel
 - [ ] **CORE-03**: User can invoke commands via slash prefix (e.g., /standup, /free-dump, /review)
 - [ ] **CORE-04**: Core commands registered to Obsidian command palette (Ctrl/Cmd+P) and keyboard shortcuts
-- [ ] **CORE-05**: Plugin exposes status bar indicator showing model, session state, and token usage
+- [x] **CORE-05**: Plugin exposes status bar indicator showing model, session state, and token usage
 
 ### Session & Context
 
@@ -52,12 +52,12 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **CMND-01**: /standup — Morning standup: load context, review yesterday, show tasks, suggest priorities
 - [x] **CMND-02**: /free-dump — Capture non-structured text, auto-classify and route
 - [x] **CMND-03**: /review — Full session review: validate notes, update indexes,发现 missed成果
-- [ ] **CMND-04**: /weekly — Cross-session weekly summary, pattern discovery,成果 report
-- [ ] **CMND-05**: /1on1 — Structure meeting notes into standard 1:1 format
-- [ ] **CMND-06**: /incident — Capture incident from Slack, reconstruct timeline, create event doc
-- [ ] **CMND-07**: /brag — Record成果 with evidence links to Brag Doc
-- [ ] **CMND-08**: /report — Generate performance review brief from evidence chain
-- [ ] **CMND-09**: /audit — Check knowledge base: orphans, broken links, frontmatter gaps, stale content
+- [x] **CMND-04**: /weekly — Cross-session weekly summary, pattern discovery,成果 report
+- [x] **CMND-05**: /1on1 — Structure meeting notes into standard 1:1 format
+- [x] **CMND-06**: /incident — Capture incident from Slack, reconstruct timeline, create event doc
+- [x] **CMND-07**: /brag — Record成果 with evidence links to Brag Doc
+- [x] **CMND-08**: /report — Generate performance review brief from evidence chain
+- [x] **CMND-09**: /audit — Check knowledge base: orphans, broken links, frontmatter gaps, stale content
 - [ ] **CMND-10**: User can add custom commands as .md files in forge/commands/
 
 ### Sub-Agents
@@ -74,8 +74,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Mobile & Platform
 
-- [ ] **MOBI-01**: On mobile, bash/Git tools removed from tool list (silent, no error shown)
-- [ ] **MOBI-02**: Core chat, vault read/write, metadata query, LLM calls fully functional on mobile
+- [x] **MOBI-01**: On mobile, bash/Git tools removed from tool list (silent, no error shown)
+- [x] **MOBI-02**: Core chat, vault read/write, metadata query, LLM calls fully functional on mobile
 - [ ] **MOBI-03**: External integrations (Slack/GitHub) work on mobile via requestUrl()
 
 ### 操作手册
@@ -132,7 +132,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CORE-02 | Phase 1 | Pending |
 | CORE-03 | Phase 1 | Pending |
 | CORE-04 | Phase 1 | Pending |
-| CORE-05 | Phase 4 | Pending |
+| CORE-05 | Phase 4 | Complete |
 | SESS-01 | Phase 2 | Complete |
 | SESS-02 | Phase 2 | Complete |
 | SESS-03 | Phase 2 | Complete |
@@ -150,12 +150,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CMND-01 | Phase 2 | Complete |
 | CMND-02 | Phase 2 | Complete |
 | CMND-03 | Phase 2 | Complete |
-| CMND-04 | Phase 3 | Pending |
-| CMND-05 | Phase 3 | Pending |
-| CMND-06 | Phase 3 | Pending |
-| CMND-07 | Phase 3 | Pending |
-| CMND-08 | Phase 3 | Pending |
-| CMND-09 | Phase 3 | Pending |
+| CMND-04 | Phase 3 | Complete |
+| CMND-05 | Phase 3 | Complete |
+| CMND-06 | Phase 3 | Complete |
+| CMND-07 | Phase 3 | Complete |
+| CMND-08 | Phase 3 | Complete |
+| CMND-09 | Phase 3 | Complete |
 | CMND-10 | Phase 2 | Pending |
 | SUBG-01 | Phase 3 | Complete |
 | SUBG-02 | Phase 3 | Complete |
@@ -163,8 +163,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EXT-01 | Phase 3 | Pending |
 | EXT-02 | Phase 3 | Pending |
 | EXT-03 | Phase 3 | Pending |
-| MOBI-01 | Phase 4 | Pending |
-| MOBI-02 | Phase 4 | Pending |
+| MOBI-01 | Phase 4 | Complete |
+| MOBI-02 | Phase 4 | Complete |
 | MOBI-03 | Phase 3 | Pending |
 | OPS-01 | Phase 1 | Pending |
 | OPS-02 | Phase 1 | Pending |
