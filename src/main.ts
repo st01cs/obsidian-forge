@@ -10,6 +10,12 @@ import { loadPiSDK } from './pi-loader';
 import { executeStandupCommand } from './commands/standup';
 import { executeFreeDumpCommand } from './commands/free-dump';
 import { executeReviewCommand } from './commands/review';
+import { executeWeeklyCommand } from './commands/weekly';
+import { execute1on1Command } from './commands/1on1';
+import { executeIncidentCommand } from './commands/incident';
+import { executeBragCommand } from './commands/brag';
+import { executeReportCommand } from './commands/report';
+import { executeAuditCommand } from './commands/audit';
 
 // ═══════════════════════════════════════════════════════════════
 // SETTINGS INTERFACE
@@ -380,21 +386,94 @@ ${new Date().toISOString().split('T')[0]}
       }
     });
 
-    // Phase 3+ commands (stub - not implemented yet)
-    for (const cmd of COMMANDS) {
-      if (['open-chat', 'standup', 'free-dump', 'review'].includes(cmd.id)) continue;
-
-      this.addCommand({
-        id: `forge-${cmd.id}`,
-        name: `Forge: ${cmd.name}`,
-        description: cmd.description,
-        callback: () => {
-          this.app.workspace.getLeaf(false).setViewState({
-            type: VIEW_TYPE_CHAT
-          });
-          new Notice(`${cmd.name} will be available in a future phase.`, 3000);
+    // CMND-04: /weekly command
+    this.addCommand({
+      id: 'forge-weekly',
+      name: 'Forge: Weekly Summary',
+      description: 'Cross-session weekly summary with pattern discovery',
+      callback: async () => {
+        this.app.workspace.getLeaf(false).setViewState({ type: VIEW_TYPE_CHAT });
+        if (this.agentBridge) {
+          await executeWeeklyCommand(this.agentBridge);
+        } else {
+          new Notice('Agent not initialized. Configure your API key.', 4000);
         }
-      });
-    }
+      }
+    });
+
+    // CMND-05: /1on1 command
+    this.addCommand({
+      id: 'forge-1on1',
+      name: 'Forge: 1:1 Meeting Notes',
+      description: 'Structure meeting notes into standard 1:1 format',
+      callback: async () => {
+        this.app.workspace.getLeaf(false).setViewState({ type: VIEW_TYPE_CHAT });
+        if (this.agentBridge) {
+          await execute1on1Command(this.agentBridge);
+        } else {
+          new Notice('Agent not initialized. Configure your API key.', 4000);
+        }
+      }
+    });
+
+    // CMND-06: /incident command
+    this.addCommand({
+      id: 'forge-incident',
+      name: 'Forge: Incident Capture',
+      description: 'Capture incident from Slack, reconstruct timeline',
+      callback: async () => {
+        this.app.workspace.getLeaf(false).setViewState({ type: VIEW_TYPE_CHAT });
+        if (this.agentBridge) {
+          await executeIncidentCommand(this.agentBridge);
+        } else {
+          new Notice('Agent not initialized. Configure your API key.', 4000);
+        }
+      }
+    });
+
+    // CMND-07: /brag command
+    this.addCommand({
+      id: 'forge-brag',
+      name: 'Forge: Record Win',
+      description: 'Record an achievement with evidence links to Brag Doc',
+      callback: async () => {
+        this.app.workspace.getLeaf(false).setViewState({ type: VIEW_TYPE_CHAT });
+        if (this.agentBridge) {
+          await executeBragCommand(this.agentBridge);
+        } else {
+          new Notice('Agent not initialized. Configure your API key.', 4000);
+        }
+      }
+    });
+
+    // CMND-08: /report command
+    this.addCommand({
+      id: 'forge-report',
+      name: 'Forge: Performance Brief',
+      description: 'Generate performance review brief from evidence chain',
+      callback: async () => {
+        this.app.workspace.getLeaf(false).setViewState({ type: VIEW_TYPE_CHAT });
+        if (this.agentBridge) {
+          await executeReportCommand(this.agentBridge);
+        } else {
+          new Notice('Agent not initialized. Configure your API key.', 4000);
+        }
+      }
+    });
+
+    // CMND-09: /audit command
+    this.addCommand({
+      id: 'forge-audit',
+      name: 'Forge: Knowledge Audit',
+      description: 'Check orphans, broken links, frontmatter gaps, stale content',
+      callback: async () => {
+        this.app.workspace.getLeaf(false).setViewState({ type: VIEW_TYPE_CHAT });
+        if (this.agentBridge) {
+          await executeAuditCommand(this.agentBridge);
+        } else {
+          new Notice('Agent not initialized. Configure your API key.', 4000);
+        }
+      }
+    });
   }
 }
