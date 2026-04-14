@@ -28,7 +28,13 @@ Obsidian Forge embeds an AI agent (pi SDK) into Obsidian as a community plugin, 
   8. Platform detection runs at startup; bash/Git tools removed on mobile (no error shown)
   9. Core chat, vault read/write, metadata query, and LLM calls work on mobile
   10. FORGE.md created on first enable and editable in Obsidian
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Plugin scaffold (manifest.json, package.json, tsconfig.json, esbuild.config.mjs) + VaultAdapter
+- [ ] 01-02-PLAN.md — Mobile platform detection (mobile.ts) + ToolRegistry with 11 Obsidian-native tools
+- [ ] 01-03-PLAN.md — ChatPanel ItemView, SettingsTab, main.ts with vault structure creation
+
 **UI hint**: yes
 
 ### Phase 2: Agent Loop
@@ -86,7 +92,7 @@ Obsidian Forge embeds an AI agent (pi SDK) into Obsidian as a community plugin, 
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/N | Not started | - |
+| 1. Foundation | 0/3 | Planning complete | - |
 | 2. Agent Loop | 0/N | Not started | - |
 | 3. Advanced | 0/N | Not started | - |
 | 4. Polish | 0/N | Not started | - |
