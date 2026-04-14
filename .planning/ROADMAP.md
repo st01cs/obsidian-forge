@@ -6,7 +6,7 @@ Obsidian Forge embeds an AI agent (pi SDK) into Obsidian as a community plugin, 
 
 ## Phases
 
-- [ ] **Phase 1: Foundation** - Plugin scaffold, vault adapter, tool registry, conversation panel, settings, mobile foundation
+- [x] **Phase 1: Foundation** - Plugin scaffold, vault adapter, tool registry, conversation panel, settings, mobile foundation
 - [ ] **Phase 2: Agent Loop** - Session context, knowledge routing, core commands, write validation
 - [ ] **Phase 3: Advanced** - Complex commands, sub-agents, external integrations
 - [ ] **Phase 4: Polish** - Status bar indicator, mobile parity
@@ -31,9 +31,9 @@ Obsidian Forge embeds an AI agent (pi SDK) into Obsidian as a community plugin, 
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Plugin scaffold (manifest.json, package.json, tsconfig.json, esbuild.config.mjs) + VaultAdapter
-- [ ] 01-02-PLAN.md — Mobile platform detection (mobile.ts) + ToolRegistry with 11 Obsidian-native tools
-- [ ] 01-03-PLAN.md — ChatPanel ItemView, SettingsTab, main.ts with vault structure creation
+- [x] 01-01-PLAN.md — Plugin scaffold (manifest.json, package.json, tsconfig.json, esbuild.config.mjs) + VaultAdapter
+- [x] 01-02-PLAN.md — Mobile platform detection (mobile.ts) + ToolRegistry with 11 Obsidian-native tools
+- [x] 01-03-PLAN.md — ChatPanel ItemView, SettingsTab, main.ts with vault structure creation
 
 **UI hint**: yes
 
@@ -44,8 +44,8 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. On session startup, agent loads context: North Star summary, active projects (metadataCache), recent Git commits, task list
   2. Session state persists via cognitive memory system (notes in forge/cognitive/) and survives plugin restart
-  3. On session close, agent presents session summary and checklist (index updates, orphan check,成果 discovery)
-  4. Agent automatically classifies inbound messages by type (decision, event,成果, 1:1, architecture, person, project update)
+  3. On session close, agent presents session summary and checklist (index updates, orphan check, 成果 discovery)
+  4. Agent automatically classifies inbound messages by type (decision, event, 成果, 1:1, architecture, person, project update)
   5. Classified content routes to correct notes/zones with appropriate frontmatter
   6. PARA zones (work/, org/, performance/, cognitive/, reference/, draft/, forge/) are maintained by the agent
   7. All notes include required frontmatter (date, description ~150 chars, tags); notes over 300 chars include wikilinks
@@ -53,19 +53,24 @@ Plans:
   9. vault_rename updates all referencing wikilinks automatically
   10. /standup command loads context, reviews yesterday, shows tasks, suggests priorities
   11. /free-dump command captures non-structured text, auto-classifies, and routes
-  12. /review command validates notes, updates indexes,发现 missed成果
+  12. /review command validates notes, updates indexes, 发现 missed 成果
   13. User can add custom commands as .md files in forge/commands/
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [x] 02-01-PLAN.md — ESM dynamic import wrapper (pi-loader.ts), AgentBridge, SessionManager, main.ts integration
+- [ ] 02-02-PLAN.md — Session event subscriptions, write validation (VAULT-03), wikilink updates (VAULT-04), context injection
+- [ ] 02-03-PLAN.md — Command implementations (/standup, /free-dump, /review), custom command loader (CMND-10), FORGE.md docs
 
 ### Phase 3: Advanced
 **Goal**: Agent supports complex workflows, sub-agents, and external evidence capture
 **Depends on**: Phase 2
 **Requirements**: CMND-04, CMND-05, CMND-06, CMND-07, CMND-08, CMND-09, SUBG-01, SUBG-02, SUBG-03, EXT-01, EXT-02, EXT-03, MOBI-03
 **Success Criteria** (what must be TRUE):
-  1. /weekly command produces cross-session weekly summary with pattern discovery and成果 report
+  1. /weekly command produces cross-session weekly summary with pattern discovery and 成果 report
   2. /1on1 command structures meeting notes into standard 1:1 format
   3. /incident command captures incident from Slack, reconstructs timeline, creates event doc
-  4. /brag command records成果 with evidence links to Brag Doc
+  4. /brag command records 成果 with evidence links to Brag Doc
   5. /report command generates performance review brief from evidence chain
   6. /audit command checks knowledge base: orphans, broken links, frontmatter gaps, stale content
   7. Heavy tasks spawn isolated sub-agent sessions via createAgentSession()
@@ -92,8 +97,8 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/3 | Planning complete | - |
-| 2. Agent Loop | 0/N | Not started | - |
+| 1. Foundation | 3/3 | Planning complete | 2026-04-14 |
+| 2. Agent Loop | 0/3 | Planning complete | - |
 | 3. Advanced | 0/N | Not started | - |
 | 4. Polish | 0/N | Not started | - |
 

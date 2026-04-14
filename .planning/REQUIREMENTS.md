@@ -23,9 +23,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Session & Context
 
-- [ ] **SESS-01**: On session startup, agent loads context: North Star summary, active projects (metadataCache query), recent Git commits (Desktop), task list
-- [ ] **SESS-02**: Session state persists via cognitive memory system (notes in forge/cognitive/) and session backups
-- [ ] **SESS-03**: On session close, agent presents session summary and checklist (index updates, orphan check,成果 discovery)
+- [x] **SESS-01**: On session startup, agent loads context: North Star summary, active projects (metadataCache query), recent Git commits (Desktop), task list
+- [x] **SESS-02**: Session state persists via cognitive memory system (notes in forge/cognitive/) and session backups
+- [x] **SESS-03**: On session close, agent presents session summary and checklist (index updates, orphan check,成果 discovery)
 
 ### Knowledge Routing
 
@@ -82,7 +82,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [ ] **OPS-01**: FORGE.md created on first enable; user can edit in Obsidian
 - [ ] **OPS-02**: Agent loads FORGE.md on startup as system-level instructions
-- [ ] **OPS-03**: Commands and sub-agents documented in FORGE.md with usage examples
+- [x] **OPS-03**: Commands and sub-agents documented in FORGE.md with usage examples
 
 ## v2 Requirements
 
@@ -133,9 +133,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CORE-03 | Phase 1 | Pending |
 | CORE-04 | Phase 1 | Pending |
 | CORE-05 | Phase 4 | Pending |
-| SESS-01 | Phase 2 | Pending |
-| SESS-02 | Phase 2 | Pending |
-| SESS-03 | Phase 2 | Pending |
+| SESS-01 | Phase 2 | Complete |
+| SESS-02 | Phase 2 | Complete |
+| SESS-03 | Phase 2 | Complete |
 | ROUTE-01 | Phase 2 | Pending |
 | ROUTE-02 | Phase 2 | Pending |
 | ROUTE-03 | Phase 2 | Pending |
@@ -168,7 +168,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MOBI-03 | Phase 3 | Pending |
 | OPS-01 | Phase 1 | Pending |
 | OPS-02 | Phase 1 | Pending |
-| OPS-03 | Phase 2 | Pending |
+| OPS-03 | Phase 2 | Complete |
 
 **Coverage:**
 - v1 requirements: 42 total
