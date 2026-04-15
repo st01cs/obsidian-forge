@@ -26,6 +26,7 @@ export interface ObsidianForgeSettings {
   provider: string;
   apiKey: string;
   model: string;
+  baseUrl: string;
   // EXT-01: Slack Bot Token
   slackToken: string;
   // EXT-02: GitHub Personal Access Token
@@ -36,6 +37,7 @@ export const DEFAULT_SETTINGS: Partial<ObsidianForgeSettings> = {
   provider: 'openai',
   apiKey: '',
   model: 'gpt-4o',
+  baseUrl: '',
   slackToken: '',     // EXT-01
   githubToken: ''    // EXT-02
 };

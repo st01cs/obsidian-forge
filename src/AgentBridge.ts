@@ -83,29 +83,25 @@ export class AgentBridge {
     // Build startup context (SESS-01): NORTHSTAR + metadataCache + recent sessions
     const startupContext = await this.sessionManager.buildStartupContext();
 
-    // Configure resource loader with system prompt override
-    // This injects FORGE.md + NORTHSTAR.md + startupContext into every session
-    const resourceLoader = new sdk.DefaultResourceLoader({
-      cwd: this.getVaultPath(),
-      agentDir: '~/.pi/forge',
-      systemPromptOverride: () => this.buildSystemPrompt(startupContext)
-    });
-    await resourceLoader.reload();
-
-    // Set up auth and model
-    const authStorage = sdk.AuthStorage.create();
-    const modelRegistry = sdk.ModelRegistry.create(authStorage);
+    // Let pi resolve credentials through its standard env-var path.
+    this.applyRuntimeApiKeyEnv();
     const model = sdk.getModel(this.settings.provider as any, this.settings.model);
+    if (!model) {
+      throw new Error(`Model not found: ${this.settings.provider}/${this.settings.model}`);
+    }
+
+    // Override baseUrl if custom endpoint is configured (e.g., OpenRouter proxy)
+    if (this.settings.baseUrl) {
+      (model as any).baseUrl = this.settings.baseUrl;
+    }
 
     // Create session with Obsidian-native tools via customTools
     const { session } = await sdk.createAgentSession({
       cwd: this.getVaultPath(),
       agentDir: '~/.pi/forge',
       model,
-      authStorage,
-      modelRegistry,
       customTools: this.toolRegistry.getTools(),
-      resourceLoader,
+      systemPrompt: this.buildSystemPrompt(startupContext),
       sessionManager: sdk.SessionManager.inMemory(), // D-03: fresh start, cognitive via vault
       settingsManager: undefined
     });
@@ -214,6 +210,21 @@ export class AgentBridge {
   private getVaultPath(): string {
     // Get vault root path from app
     return (this.vaultAdapter as any).app.vault.adapter.getBasePath?.() || '.';
+  }
+
+  private applyRuntimeApiKeyEnv(): void {
+    if (!this.settings.apiKey) return;
+
+    const envVarByProvider: Record<string, string> = {
+      openai: 'OPENAI_API_KEY',
+      anthropic: 'ANTHROPIC_API_KEY',
+      google: 'GEMINI_API_KEY'
+    };
+
+    const envVar = envVarByProvider[this.settings.provider];
+    if (envVar) {
+      process.env[envVar] = this.settings.apiKey;
+    }
   }
 
   private buildSystemPrompt(startupContext: string): string {

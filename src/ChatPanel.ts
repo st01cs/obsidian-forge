@@ -1,7 +1,21 @@
-import { App, ItemView, WorkspaceLeaf, setIcon } from 'obsidian';
+import { App, ItemView, WorkspaceLeaf, setIcon, requestUrl } from 'obsidian';
 import { COMMANDS, filterCommands, CommandDefinition } from './commands';
-import { ObsidianForge } from './main';
-import { Message } from './pi-stub';
+import ObsidianForge from './main';
+import { loadPiSDK, getPiSDK } from './pi-loader';
+
+type ChatModel = {
+  id: string;
+  name: string;
+  api: string;
+  provider: string;
+  baseUrl?: string;
+  reasoning?: boolean;
+  input?: string[];
+  cost?: Record<string, number>;
+  contextWindow?: number;
+  maxTokens?: number;
+  headers?: Record<string, string>;
+};
 
 export const VIEW_TYPE_CHAT = 'obsidian-forge-chat';
 
@@ -61,7 +75,8 @@ export class ChatPanel extends ItemView {
       .chat-message-user { flex-direction: row-reverse; }
       .chat-message-avatar { width: 24px; height: 24px; margin-right: 8px; flex-shrink: 0; }
       .chat-message-user .chat-message-avatar { margin-right: 0; margin-left: 8px; }
-      .chat-message-content { flex: 1; background: var(--background-secondary); padding: 8px 12px; border-radius: 8px; font-size: 14px; line-height: 1.5; }
+      .chat-message-body { flex: 1; display: flex; flex-direction: column; }
+      .chat-message-content { flex: 1; background: var(--background-secondary); padding: 8px 12px; border-radius: 8px; font-size: 14px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; user-select: text; -webkit-user-select: text; cursor: text; }
       .chat-message-user .chat-message-content { background: var(--interactive-accent); color: var(--text-on-accent); }
       .chat-message-streaming .chat-message-content { opacity: 0.8; }
       .chat-commands { max-height: 200px; overflow-y: auto; border: 1px solid var(--border); background: var(--background); }
@@ -94,7 +109,7 @@ export class ChatPanel extends ItemView {
   private renderHeader(container: HTMLElement): void {
     const header = container.createDiv({ cls: 'chat-header' });
     header.createEl('h3', { text: 'Obsidian Forge' });
-    const status = header.createEl('span', { cls: 'chat-status', text: 'Ready' });
+    header.createEl('span', { cls: 'chat-status', text: 'Ready' });
   }
 
   private renderMessages(container: HTMLElement): void {
@@ -196,13 +211,8 @@ export class ChatPanel extends ItemView {
       timestamp: Date.now()
     });
 
-    // CORE-02: Route command to agent for execution with streaming response
-    // For Phase 1: Basic command routing - construct a command message and stream the agent's response
     const commandContent = `Execute command: ${cmd.id}. ${cmd.description}`;
-    await this.streamToAgent([{
-      role: 'user',
-      content: commandContent
-    }]);
+    await this.streamToAgent(commandContent);
   }
 
   private async sendMessage(): Promise<void> {
@@ -222,93 +232,261 @@ export class ChatPanel extends ItemView {
     };
     this.addMessage(userMsg);
 
-    // CORE-02: Send to agent and stream response token-by-token
-    // Build message history for context (include recent messages)
-    const messageHistory: Message[] = this.messages.slice(-10).map(m => ({
-      role: m.role as 'user' | 'assistant' | 'system',
-      content: m.content
-    }));
-    // Add current message
-    messageHistory.push({ role: 'user', content });
-
-    await this.streamToAgent(messageHistory);
+    await this.streamToAgent(content);
   }
 
-  /**
-   * Send messages to the agent and stream the response token-by-token.
-   * CORE-02: Agent responses stream in real-time
-   *
-   * @param messages - Message history to send to the agent
-   */
-  private async streamToAgent(messages: Message[]): Promise<void> {
-    // Create a placeholder message for streaming response
+  private async streamToAgent(content: string): Promise<void> {
     const responseId = `response-${Date.now()}`;
     const responseMsg: ChatMessage = {
       id: responseId,
       role: 'assistant',
-      content: '',
+      content: 'Thinking...',
       timestamp: Date.now(),
       isStreaming: true
     };
     this.addMessage(responseMsg);
 
-    // Get the streaming message element
     const getStreamingEl = () =>
       this.messagesEl?.querySelector(`[data-msg-id="${responseId}"] .chat-message-content`);
 
     try {
-      // CORE-02: Wire pi.ai.stream() onToken callback to appendToken()
-      // The streaming can work with a basic session - no full agent loop needed
-      await pi.ai.stream(messages, {
-        onToken: (token: string) => {
-          // Append token to streaming message content
+      if (!this.plugin.settings.apiKey) {
+        throw new Error('Please configure your API key in settings.');
+      }
+
+      if (this.plugin.settings.provider === 'anthropic') {
+        const anthropicModel = this.resolveAnthropicChatModel();
+        const contextMessages = this.messages
+          .filter((message) => !message.isStreaming)
+          .slice(-12)
+          .map((message) => ({
+            role: message.role,
+            content: message.content,
+            timestamp: message.timestamp
+          }));
+
+        const reply = await this.requestAnthropicCompatibleReply(anthropicModel, contextMessages);
+        const msgIndex = this.messages.findIndex(m => m.id === responseId);
+        if (msgIndex !== -1) {
+          this.messages[msgIndex].content = reply;
+          this.messages[msgIndex].isStreaming = false;
+        }
+        const contentEl = getStreamingEl();
+        if (contentEl) {
+          contentEl.setText(reply);
+        }
+        const msgEl = this.messagesEl?.querySelector(`[data-msg-id="${responseId}"]`);
+        msgEl?.removeClass('chat-message-streaming');
+        return;
+      }
+
+      await loadPiSDK();
+      const sdk = getPiSDK();
+      const model = this.resolveChatModel(sdk);
+
+      if (this.plugin.settings.baseUrl) {
+        (model as any).baseUrl = this.plugin.settings.baseUrl;
+      }
+
+      const context = {
+        messages: this.messages
+          .filter((message) => !message.isStreaming)
+          .slice(-12)
+          .map((message) => ({
+            role: message.role,
+            content: message.content,
+            timestamp: message.timestamp
+          }))
+      };
+
+      let finalText = '';
+      const stream = sdk.pi.streamSimple(model, context as any, {
+        apiKey: this.plugin.settings.apiKey
+      });
+
+      for await (const event of stream as any) {
+        if (event.type === 'text_delta') {
+          finalText += event.delta;
           const msgIndex = this.messages.findIndex(m => m.id === responseId);
           if (msgIndex !== -1) {
-            this.messages[msgIndex].content += token;
+            this.messages[msgIndex].content = finalText;
           }
-          // Update the DOM element
           const contentEl = getStreamingEl();
           if (contentEl) {
-            contentEl.textContent = this.messages[msgIndex].content;
+            contentEl.setText(finalText);
             this.messagesEl!.scrollTop = this.messagesEl!.scrollHeight;
           }
-        },
-        onComplete: () => {
-          // Mark streaming as complete
-          const msgIndex = this.messages.findIndex(m => m.id === responseId);
-          if (msgIndex !== -1) {
-            this.messages[msgIndex].isStreaming = false;
-          }
-          const msgEl = this.messagesEl?.querySelector(`[data-msg-id="${responseId}"]`);
-          msgEl?.removeClass('chat-message-streaming');
-          console.log('[ChatPanel] Stream complete');
-        },
-        onError: (error: Error) => {
-          // Show error in message
-          const msgIndex = this.messages.findIndex(m => m.id === responseId);
-          if (msgIndex !== -1) {
-            this.messages[msgIndex].content = `Error: ${error.message}`;
-            this.messages[msgIndex].isStreaming = false;
-          }
-          const contentEl = getStreamingEl();
-          if (contentEl) {
-            contentEl.setText(`Error: ${error.message}`);
-          }
-          console.error('[ChatPanel] Stream error:', error);
+        } else if (event.type === 'error') {
+          throw new Error(event.error?.errorMessage || 'Unknown stream error');
         }
-      });
-    } catch (error) {
-      // Handle case where pi.ai is not available
+      }
+
+      const reply = finalText.trim() || 'No response received.';
       const msgIndex = this.messages.findIndex(m => m.id === responseId);
       if (msgIndex !== -1) {
-        this.messages[msgIndex].content = 'Agent not available. Please configure your API key in settings.';
+        this.messages[msgIndex].content = reply;
+        this.messages[msgIndex].isStreaming = false;
+      }
+
+      const contentEl = getStreamingEl();
+      if (contentEl) {
+        contentEl.setText(reply);
+      }
+
+      const msgEl = this.messagesEl?.querySelector(`[data-msg-id="${responseId}"]`);
+      msgEl?.removeClass('chat-message-streaming');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const msgIndex = this.messages.findIndex(m => m.id === responseId);
+      if (msgIndex !== -1) {
+        this.messages[msgIndex].content = `Error: ${message}`;
         this.messages[msgIndex].isStreaming = false;
       }
       const contentEl = getStreamingEl();
       if (contentEl) {
-        contentEl.setText('Agent not available. Please configure your API key in settings.');
+        contentEl.setText(`Error: ${message}`);
       }
-      console.warn('[ChatPanel] pi.ai not available:', error);
+      const msgEl = this.messagesEl?.querySelector(`[data-msg-id="${responseId}"]`);
+      msgEl?.removeClass('chat-message-streaming');
+    }
+  }
+
+  private resolveChatModel(sdk: ReturnType<typeof getPiSDK>): ChatModel {
+    const provider = this.plugin.settings.provider;
+    const modelId = this.plugin.settings.model;
+    const builtInModel = sdk.getModel(provider as any, modelId) as ChatModel | undefined;
+    if (builtInModel) {
+      return builtInModel;
+    }
+
+    if (provider === 'openai') {
+      return {
+        id: modelId,
+        name: modelId,
+        api: 'openai-responses',
+        provider,
+        baseUrl: this.plugin.settings.baseUrl || 'https://api.openai.com/v1',
+        reasoning: true,
+        input: ['text', 'image'],
+        cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+        contextWindow: 128000,
+        maxTokens: 16384
+      };
+    }
+
+    if (provider === 'google') {
+      return {
+        id: modelId,
+        name: modelId,
+        api: 'google',
+        provider,
+        baseUrl: this.plugin.settings.baseUrl,
+        reasoning: true,
+        input: ['text', 'image'],
+        cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+        contextWindow: 1000000,
+        maxTokens: 65536
+      };
+    }
+
+    throw new Error(`Model not found: ${provider}/${modelId}`);
+  }
+
+  private resolveAnthropicChatModel(): ChatModel {
+    return {
+      id: this.plugin.settings.model,
+      name: this.plugin.settings.model,
+      api: 'anthropic-messages',
+      provider: 'anthropic',
+      baseUrl: this.plugin.settings.baseUrl || 'https://api.anthropic.com',
+      reasoning: true,
+      input: ['text', 'image'],
+      cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+      contextWindow: 200000,
+      maxTokens: 64000
+    };
+  }
+
+  private async requestAnthropicCompatibleReply(
+    model: ChatModel,
+    messages: Array<{ role: string; content: string; timestamp: number }>
+  ): Promise<string> {
+    const endpointBase = (model.baseUrl || 'https://api.anthropic.com').replace(/\/+$/, '');
+    const url = endpointBase.endsWith('/v1/messages') ? endpointBase : `${endpointBase}/v1/messages`;
+
+    let response;
+    try {
+      response = await requestUrl({
+        url,
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': this.plugin.settings.apiKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: model.id,
+          max_tokens: Math.min(model.maxTokens || 4096, 4096),
+          messages: messages.map((message) => ({
+            role: message.role === 'assistant' ? 'assistant' : 'user',
+            content: message.content
+          }))
+        })
+      });
+    } catch (error) {
+      const details = this.extractRequestErrorDetails(error);
+      throw new Error(`Anthropic-compatible request failed (${details.statusText}) at ${url}${details.message ? `: ${details.message}` : ''}`);
+    }
+
+    const payload = typeof response.json === 'object' && response.json !== null
+      ? response.json
+      : JSON.parse(response.text);
+    if (response.status < 200 || response.status >= 300) {
+      const message = payload?.error?.message || payload?.message || `HTTP ${response.status}`;
+      throw new Error(message);
+    }
+
+    const text = Array.isArray(payload?.content)
+      ? payload.content
+          .filter((item: any) => item?.type === 'text' && typeof item?.text === 'string')
+          .map((item: any) => item.text)
+          .join('\n')
+      : '';
+
+    return text.trim() || 'No response received.';
+  }
+
+  private extractRequestErrorDetails(error: unknown): { statusText: string; message: string } {
+    const requestError = error as {
+      status?: number;
+      message?: string;
+      response?: { status?: number; text?: string; json?: unknown };
+    };
+
+    const status = requestError.response?.status ?? requestError.status;
+    const responseText = typeof requestError.response?.text === 'string' ? requestError.response.text : '';
+    const payload = this.tryParseJson(responseText);
+    const message = payload?.error?.message
+      || payload?.message
+      || responseText
+      || requestError.message
+      || String(error);
+
+    return {
+      statusText: status ? `HTTP ${status}` : 'request error',
+      message: message.slice(0, 500)
+    };
+  }
+
+  private tryParseJson(text: string): any | null {
+    if (!text) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(text);
+    } catch {
+      return null;
     }
   }
 
@@ -326,7 +504,6 @@ export class ChatPanel extends ItemView {
       msgEl.addClass('chat-message-streaming');
     }
 
-    // Avatar/icon
     const avatar = msgEl.createDiv({ cls: 'chat-message-avatar' });
     if (message.role === 'user') {
       setIcon(avatar, 'user');
@@ -334,29 +511,14 @@ export class ChatPanel extends ItemView {
       setIcon(avatar, 'bot');
     }
 
-    // Content
-    const contentEl = msgEl.createDiv({ cls: 'chat-message-content' });
+    const bodyEl = msgEl.createDiv({ cls: 'chat-message-body' });
+
+    const contentEl = bodyEl.createDiv({ cls: 'chat-message-content' });
     contentEl.setText(message.content);
 
-    // Scroll to bottom
     this.messagesEl.scrollTop = this.messagesEl.scrollHeight;
   }
 
-  /**
-   * Append a token to the last assistant message (for streaming).
-   * Called by streamToAgent() when pi.ai.stream delivers tokens.
-   * CORE-02: Streaming agent responses
-   */
-  appendToken(token: string): void {
-    if (!this.messagesEl) return;
-    const lastMsg = this.messagesEl.querySelector('.chat-message-assistant:last-child .chat-message-content');
-    if (lastMsg) {
-      lastMsg.setText(lastMsg.textContent + token);
-      this.messagesEl.scrollTop = this.messagesEl.scrollHeight;
-    }
-  }
-
   async onClose(): Promise<void> {
-    // Cleanup if needed
   }
 }

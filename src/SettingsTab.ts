@@ -1,5 +1,5 @@
 import { App, PluginSettingTab, Setting, DropdownComponent, TextComponent } from 'obsidian';
-import { ObsidianForge, ObsidianForgeSettings, DEFAULT_SETTINGS } from './main';
+import ObsidianForge from './main';
 
 export class ObsidianForgeSettingsTab extends PluginSettingTab {
   private plugin: ObsidianForge;
@@ -40,13 +40,27 @@ export class ObsidianForgeSettingsTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName('API Key')
       .setDesc('Your API key for the selected provider. Stored in vault config.')
-      .addTextField((textField: TextComponent) => {
+      .addText((textField: TextComponent) => {
         textField
           .setPlaceholder('sk-...')
-          .setAttr('type', 'password') // D-06: Mask input
           .setValue(this.plugin.settings.apiKey)
           .onChange(async (value: string) => {
             this.plugin.settings.apiKey = value;
+            await this.plugin.saveSettings();
+          });
+        textField.inputEl.type = 'password';
+      });
+
+    // Base URL (optional - for proxies like OpenRouter)
+    new Setting(containerEl)
+      .setName('Base URL')
+      .setDesc('Custom API endpoint (e.g., OpenRouter). Leave empty for default provider endpoint.')
+      .addText((textField: TextComponent) => {
+        textField
+          .setPlaceholder('https://openrouter.ai/api/v1')
+          .setValue(this.plugin.settings.baseUrl)
+          .onChange(async (value: string) => {
+            this.plugin.settings.baseUrl = value;
             await this.plugin.saveSettings();
           });
       });
@@ -55,7 +69,7 @@ export class ObsidianForgeSettingsTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName('Model')
       .setDesc('Model to use (varies by provider)')
-      .addTextField((textField: TextComponent) => {
+      .addText((textField: TextComponent) => {
         textField
           .setPlaceholder('gpt-4o, claude-3-5-sonnet-20241022, gemini-2.0-flash')
           .setValue(this.plugin.settings.model)
@@ -75,30 +89,30 @@ export class ObsidianForgeSettingsTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName('Slack Bot Token')
       .setDesc('Bot token (xoxb-) for Slack integration (EXT-01)')
-      .addTextField((textField: TextComponent) => {
+      .addText((textField: TextComponent) => {
         textField
           .setPlaceholder('xoxb-...')
-          .setAttr('type', 'password')
           .setValue(this.plugin.settings.slackToken)
           .onChange(async (value: string) => {
             this.plugin.settings.slackToken = value;
             await this.plugin.saveSettings();
           });
+        textField.inputEl.type = 'password';
       });
 
     // EXT-02: GitHub Personal Access Token
     new Setting(containerEl)
       .setName('GitHub Personal Access Token')
       .setDesc('PAT for GitHub integration (EXT-02)')
-      .addTextField((textField: TextComponent) => {
+      .addText((textField: TextComponent) => {
         textField
           .setPlaceholder('ghp_...')
-          .setAttr('type', 'password')
           .setValue(this.plugin.settings.githubToken)
           .onChange(async (value: string) => {
             this.plugin.settings.githubToken = value;
             await this.plugin.saveSettings();
           });
+        textField.inputEl.type = 'password';
       });
 
     // Divider
