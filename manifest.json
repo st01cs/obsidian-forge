@@ -1,11 +1,11 @@
 {
   "id": "obsidian-forge",
   "name": "Obsidian Forge",
-  "version": "0.1.0",
+  "version": "1.0.1",
   "minAppVersion": "1.12.0",
   "description": "AI agent with persistent memory for personal knowledge management",
-  "author": "[your-name]",
-  "authorUrl": "[your-url]",
-  "fundingUrl": "[optional-url]",
-  "isDesktopOnly": false
+  "author": "st01cs",
+  "authorUrl": "https://github.com/st01cs/obsidian-forge",
+  "fundingUrl": "https://github.com/sponsors/st01cs",
+  "isDesktopOnly": true
 }

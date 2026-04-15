@@ -1,7 +1,22 @@
 import esbuild from 'esbuild';
+import { readFileSync, writeFileSync } from 'fs';
 
 const isProduction = process.argv.includes('--production');
 const isWatch = process.argv.includes('--watch');
+const bundlePath = 'main.js';
+
+function sanitizeBundle() {
+  const bundle = readFileSync(bundlePath, 'utf8');
+  const sanitized = bundle
+    .replace(/CLIENT_ID3 = decode3\(".*?"\);/, 'CLIENT_ID3 = decode3("REDACTED_GOOGLE_ANTIGRAVITY_CLIENT_ID");')
+    .replace(/CLIENT_SECRET = decode3\(".*?"\);/, 'CLIENT_SECRET = decode3("REDACTED_GOOGLE_ANTIGRAVITY_CLIENT_SECRET");')
+    .replace(/CLIENT_ID4 = decode4\(".*?"\);/, 'CLIENT_ID4 = decode4("REDACTED_GOOGLE_GEMINI_CLIENT_ID");')
+    .replace(/CLIENT_SECRET2 = decode4\(".*?"\);/, 'CLIENT_SECRET2 = decode4("REDACTED_GOOGLE_GEMINI_CLIENT_SECRET");');
+
+  if (sanitized !== bundle) {
+    writeFileSync(bundlePath, sanitized);
+  }
+}
 
 const context = await esbuild.context({
   entryPoints: ['src/main.ts'],
@@ -53,9 +68,11 @@ const context = await esbuild.context({
 
 if (isWatch) {
   await context.watch();
+  sanitizeBundle();
   console.log('Watching for changes...');
 } else {
   await context.rebuild();
   await context.dispose();
+  sanitizeBundle();
   console.log('Build complete.');
 }
