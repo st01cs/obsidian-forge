@@ -70,18 +70,12 @@ export class ForgeSessionManager {
   /**
    * Build startup context string for session initialization (SESS-01).
    * Uses metadataCache-first approach for token budget.
-   * D-01: Context includes NORTHSTAR, active projects, tasks, recent sessions.
+   * D-01: Context includes active projects, tasks, and recent sessions.
    */
   async buildStartupContext(): Promise<string> {
     const parts: string[] = [];
 
-    // 1. NORTHSTAR.md (D-01) - Most important, load first
-    const northStar = await this.loadNorthStarContent();
-    if (northStar) {
-      parts.push(`## North Star\n${this.truncate(northStar, 1500)}`);
-    }
-
-    // 2. Yesterday's session (D-03 - continuity)
+    // 1. Yesterday's session (D-03 - continuity)
     const yesterday = this.getYesterdayDate();
     const yesterdayPath = `forge/cognitive/sessions/${yesterday}.md`;
     if (this.vaultAdapter.exists(yesterdayPath)) {
@@ -91,26 +85,26 @@ export class ForgeSessionManager {
       } catch { /* ignore */ }
     }
 
-    // 3. Active projects from metadataCache (D-01 - fast, no content loading)
+    // 2. Active projects from metadataCache (D-01 - fast, no content loading)
     const activeProjects = this.detectActiveProjects();
     if (activeProjects.length > 0) {
       parts.push(`## Active Projects (${activeProjects.length})\n${activeProjects.slice(0, 10).map(p => `- ${p}`).join('\n')}${activeProjects.length > 10 ? '\n...and more' : ''}`);
     }
 
-    // 4. Open tasks from work/ zone (D-01)
+    // 3. Open tasks from work/ zone (D-01)
     const tasks = await this.extractTasks();
     if (tasks.length > 0) {
       parts.push(`## Open Tasks\n${tasks.slice(0, 15).join('\n')}${tasks.length > 15 ? '\n...and more' : ''}`);
     }
 
-    // 5. Recent sessions summary (D-03 - for continuity)
+    // 4. Recent sessions summary (D-03 - for continuity)
     const recentSessions = await this.loadRecentSessions(7);
     if (recentSessions.length > 0) {
       const summaries = recentSessions.slice(0, 5).map(s => `- ${s.date}: ${s.summary}`).join('\n');
       parts.push(`## Recent Sessions (last 7 days)\n${summaries}`);
     }
 
-    // 6. Git recent commits (D-01 - Desktop only)
+    // 5. Git recent commits (D-01 - Desktop only)
     // Note: git_log tool is available via ToolRegistry
     parts.push(`## Git Commits\n(git_log tool available - use it to get recent commits)`);
 

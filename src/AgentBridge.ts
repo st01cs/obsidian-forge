@@ -80,8 +80,12 @@ export class AgentBridge {
 
     const sdk = getPiSDK();
 
-    // Build startup context (SESS-01): NORTHSTAR + metadataCache + recent sessions
-    const startupContext = await this.sessionManager.buildStartupContext();
+    // Build startup context and load guiding documents before session creation.
+    const [startupContext, forgeContent, northStarContent] = await Promise.all([
+      this.sessionManager.buildStartupContext(),
+      this.sessionManager.loadForgeContent(),
+      this.sessionManager.loadNorthStarContent()
+    ]);
 
     // Let pi resolve credentials through its standard env-var path.
     this.applyRuntimeApiKeyEnv();
@@ -101,7 +105,7 @@ export class AgentBridge {
       agentDir: '~/.pi/forge',
       model,
       customTools: this.toolRegistry.getTools(),
-      systemPrompt: this.buildSystemPrompt(startupContext),
+      systemPrompt: this.buildSystemPrompt(startupContext, forgeContent, northStarContent),
       sessionManager: sdk.SessionManager.inMemory(), // D-03: fresh start, cognitive via vault
       settingsManager: undefined
     });
@@ -227,25 +231,7 @@ export class AgentBridge {
     }
   }
 
-  private buildSystemPrompt(startupContext: string): string {
-    // Load FORGE.md and NORTHSTAR.md at startup
-    const forgePath = 'forge/FORGE.md';
-    const northStarPath = 'forge/NORTHSTAR.md';
-
-    let forgeContent = '';
-    let northStarContent = '';
-
-    try {
-      if (this.vaultAdapter.exists(forgePath)) {
-        forgeContent = this.vaultAdapter.readNote ? 'See FORGE.md for operation manual.' : '';
-      }
-      if (this.vaultAdapter.exists(northStarPath)) {
-        northStarContent = this.vaultAdapter.readNote ? 'See NORTHSTAR.md for guiding document.' : '';
-      }
-    } catch (e) {
-      console.warn('[AgentBridge] Could not load FORGE/NORTHSTAR:', e);
-    }
-
+  private buildSystemPrompt(startupContext: string, forgeContent: string, northStarContent: string): string {
     return `You are Obsidian Forge, an AI agent embedded in Obsidian.
 
 ## Operation Manual (FORGE.md)
